@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de asistencia y pagos</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <h1>Asistencia y pagos</h1>
+
+      <section class="summary-grid">
+        <article class="card summary">
+          <span>Total a cobrar</span>
+          <strong id="totalExpected">$0</strong>
+        </article>
+        <article class="card summary">
+          <span>Total cobrado</span>
+          <strong id="totalPaid">$0</strong>
+        </article>
+        <article class="card summary">
+          <span>Saldo pendiente</span>
+          <strong id="totalPending">$0</strong>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Configuración</h2>
+        <label for="baseAmount">Base de pago mensual ($)</label>
+        <input id="baseAmount" type="number" min="0" step="100" />
+      </section>
+
+      <section class="card">
+        <h2>Agregar persona</h2>
+        <form id="personForm">
+          <div class="grid">
+            <div>
+              <label for="nameInput">Nombre</label>
+              <input id="nameInput" type="text" placeholder="Ej: Juan Pérez" required />
+            </div>
+            <div>
+              <label for="dayInput">Día</label>
+              <select id="dayInput" required>
+                <option value="">Seleccionar día</option>
+                <option>Lunes</option>
+                <option>Martes</option>
+                <option>Miércoles</option>
+                <option>Jueves</option>
+                <option>Viernes</option>
+                <option>Sábado</option>
+                <option>Domingo</option>
+              </select>
+            </div>
+            <div>
+              <label for="scheduleInput">Horario</label>
+              <input id="scheduleInput" type="text" placeholder="Ej: 19:00 a 20:00" required />
+            </div>
+          </div>
+          <button type="submit">Agregar</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="row-between wrap-mobile">
+          <h2>Personas</h2>
+          <button id="resetPayments" class="secondary" type="button">Limpiar pagos del mes</button>
+        </div>
+
+        <div class="filters">
+          <input id="searchInput" type="text" placeholder="Buscar por nombre..." />
+          <select id="dayFilter">
+            <option value="">Todos los días</option>
+            <option>Lunes</option>
+            <option>Martes</option>
+            <option>Miércoles</option>
+            <option>Jueves</option>
+            <option>Viernes</option>
+            <option>Sábado</option>
+            <option>Domingo</option>
+          </select>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Pagó</th>
+              <th>Nombre</th>
+              <th>Día</th>
+              <th>Horario</th>
+              <th>Monto</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="peopleTableBody"></tbody>
+        </table>
+
+        <div class="pagination" id="pagination"></div>
+        <p id="emptyMessage" class="muted">No hay personas para el filtro actual.</p>
+      </section>
+    </main>
+
+    <template id="personRowTemplate">
+      <tr>
+        <td>
+          <input class="paidCheckbox" type="checkbox" aria-label="Pago realizado" />
+        </td>
+        <td>
+          <input class="inlineInput nameField" type="text" aria-label="Nombre" />
+        </td>
+        <td>
+          <select class="inlineSelect dayField" aria-label="Día">
+            <option>Lunes</option>
+            <option>Martes</option>
+            <option>Miércoles</option>
+            <option>Jueves</option>
+            <option>Viernes</option>
+            <option>Sábado</option>
+            <option>Domingo</option>
+          </select>
+        </td>
+        <td>
+          <input class="inlineInput scheduleField" type="text" aria-label="Horario" />
+        </td>
+        <td>
+          <span class="amount"></span>
+        </td>
+        <td>
+          <button class="danger deleteBtn" type="button">Eliminar</button>
+        </td>
+      </tr>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>
