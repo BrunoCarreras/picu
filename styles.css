@@ -4,12 +4,18 @@
   --bg: #f7f6e5;
   --card: #efe9d0;
   --card-strong: #e5ddbd;
+  --surface: #fffdf5;
+  --surface-strong: #e9e2c4;
   --text: #2f2a1f;
   --muted: #6d6656;
   --border: #d8cfb1;
   --primary: #6c5f3c;
   --primary-soft: #8d7d55;
   --danger: #b53b2d;
+  --warning-bg: #f8d8a8;
+  --warning-text: #6c4208;
+  --success-bg: #d6e5bf;
+  --success-text: #465f20;
 }
 
 * {
@@ -28,8 +34,45 @@ body {
   padding: 0 1rem 2rem;
 }
 
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.header-copy {
+  max-width: 580px;
+}
+
 h1 {
-  margin: 0 0 1rem;
+  margin: 0 0 0.35rem;
+}
+
+h2 {
+  margin-top: 0;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.nav-tab {
+  text-decoration: none;
+  background: var(--card);
+  color: var(--text);
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.nav-tab.active {
+  background: var(--primary);
+  color: white;
 }
 
 .card {
@@ -48,6 +91,10 @@ h1 {
 
 .summary {
   background: var(--card-strong);
+}
+
+.alert-summary {
+  border-color: #cfb06c;
 }
 
 .summary span {
@@ -79,7 +126,8 @@ select {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0.52rem 0.65rem;
-  background: #fffdf5;
+  background: var(--surface);
+  color: var(--text);
 }
 
 button {
@@ -106,12 +154,11 @@ button.danger {
   gap: 0.75rem;
 }
 
-.grid {
+.grid,
+.filters,
+.grid-stock,
+.stock-filters {
   margin-bottom: 0.75rem;
-}
-
-.filters {
-  margin-bottom: 0.65rem;
 }
 
 .row-between {
@@ -124,7 +171,7 @@ button.danger {
 table {
   width: 100%;
   border-collapse: collapse;
-  background: #fffdf5;
+  background: var(--surface);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -134,10 +181,11 @@ td {
   border-bottom: 1px solid var(--border);
   text-align: left;
   padding: 0.5rem;
+  vertical-align: middle;
 }
 
 th {
-  background: #e9e2c4;
+  background: var(--surface-strong);
 }
 
 .inlineInput,
@@ -177,7 +225,27 @@ th {
   color: white;
 }
 
+.stock-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stock-status.low {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+}
+
+.stock-status.ok {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
 @media (max-width: 720px) {
+  .page-header,
   .wrap-mobile {
     flex-wrap: wrap;
   }
@@ -185,5 +253,9 @@ th {
   th,
   td {
     font-size: 0.9rem;
+  }
+
+  .nav-tabs {
+    width: 100%;
   }
 }

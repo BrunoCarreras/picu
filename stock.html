@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de stock</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="page-header">
+        <div>
+          <h1>Stock</h1>
+          <p class="muted header-copy">Administrá productos por unidad, kg o ml y recibí alertas por stock bajo.</p>
+        </div>
+        <nav class="nav-tabs" aria-label="Secciones principales">
+          <a class="nav-tab" href="index.html">Asistencia</a>
+          <a class="nav-tab active" href="stock.html">Stock</a>
+        </nav>
+      </header>
+
+      <section class="summary-grid">
+        <article class="card summary">
+          <span>Total de productos</span>
+          <strong id="totalProducts">0</strong>
+        </article>
+        <article class="card summary">
+          <span>Stock total</span>
+          <strong id="totalQuantity">0</strong>
+        </article>
+        <article class="card summary alert-summary">
+          <span>Productos con stock bajo</span>
+          <strong id="lowStockCount">0</strong>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Agregar producto</h2>
+        <form id="productForm">
+          <div class="grid grid-stock">
+            <div>
+              <label for="productNameInput">Producto</label>
+              <input id="productNameInput" type="text" placeholder="Ej: Arcilla" required />
+            </div>
+            <div>
+              <label for="productCategoryInput">Categoría</label>
+              <input id="productCategoryInput" type="text" placeholder="Ej: Herramientas" />
+            </div>
+            <div>
+              <label for="productUnitInput">Tipo de medida</label>
+              <select id="productUnitInput" required>
+                <option value="unidad">Unidad</option>
+                <option value="kg">Kg</option>
+                <option value="ml">Ml</option>
+              </select>
+            </div>
+            <div>
+              <label for="productQuantityInput">Cantidad</label>
+              <input id="productQuantityInput" type="number" min="0" step="0.01" placeholder="Ej: 2" required />
+            </div>
+          </div>
+          <button type="submit">Agregar producto</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="row-between wrap-mobile">
+          <h2>Listado de stock</h2>
+          <span class="muted">Alerta automática cuando la cantidad es menor a 3.</span>
+        </div>
+
+        <div class="filters stock-filters">
+          <input id="productSearchInput" type="text" placeholder="Buscar por nombre o categoría..." />
+          <select id="unitFilter">
+            <option value="">Todos los tipos</option>
+            <option value="unidad">Unidad</option>
+            <option value="kg">Kg</option>
+            <option value="ml">Ml</option>
+          </select>
+          <select id="alertFilter">
+            <option value="">Todos</option>
+            <option value="low">Solo stock bajo</option>
+            <option value="ok">Solo stock normal</option>
+          </select>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Categoría</th>
+              <th>Cantidad</th>
+              <th>Medida</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="stockTableBody"></tbody>
+        </table>
+
+        <div class="pagination" id="stockPagination"></div>
+        <p id="stockEmptyMessage" class="muted">No hay productos para el filtro actual.</p>
+      </section>
+    </main>
+
+    <template id="stockRowTemplate">
+      <tr>
+        <td><input class="inlineInput productNameField" type="text" aria-label="Producto" /></td>
+        <td><input class="inlineInput productCategoryField" type="text" aria-label="Categoría" /></td>
+        <td><input class="inlineInput productQuantityField" type="number" min="0" step="0.01" aria-label="Cantidad" /></td>
+        <td>
+          <select class="inlineSelect productUnitField" aria-label="Tipo de medida">
+            <option value="unidad">Unidad</option>
+            <option value="kg">Kg</option>
+            <option value="ml">Ml</option>
+          </select>
+        </td>
+        <td><span class="stock-status"></span></td>
+        <td><button class="danger deleteProductBtn" type="button">Eliminar</button></td>
+      </tr>
+    </template>
+
+    <script src="stock.js"></script>
+  </body>
+</html>
