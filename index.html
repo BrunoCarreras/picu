@@ -46,7 +46,7 @@
           <div class="grid">
             <div>
               <label for="nameInput">Nombre</label>
-              <input id="nameInput" type="text" placeholder="Ej: Victoria Maurutto" required />
+              <input id="nameInput" type="text" placeholder="Ej: Juan Pérez" required />
             </div>
             <div>
               <label for="dayInput">Día</label>
@@ -64,6 +64,10 @@
             <div>
               <label for="scheduleInput">Horario</label>
               <input id="scheduleInput" type="text" placeholder="Ej: 19:00 a 20:00" required />
+            </div>
+            <div>
+              <label for="personAmountInput">Monto individual ($)</label>
+              <input id="personAmountInput" type="number" min="0" step="100" required />
             </div>
           </div>
           <button type="submit">Agregar</button>
@@ -86,7 +90,6 @@
             <option>Jueves</option>
             <option>Viernes</option>
             <option>Sábado</option>
-            <option>Domingo</option>
           </select>
         </div>
 
@@ -132,14 +135,34 @@
           <input class="inlineInput scheduleField" type="text" aria-label="Horario" />
         </td>
         <td>
-          <span class="amount"></span>
+          <input class="inlineInput amountField" type="number" min="0" step="100" aria-label="Monto" />
         </td>
         <td>
           <button class="danger deleteBtn" type="button">Eliminar</button>
         </td>
       </tr>
     </template>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
-    <script src="script.js"></script>
+  const firebaseConfig = {
+    apiKey: "AIzaSy...",
+    authDomain: "taller-258ca.firebaseapp.com",
+    projectId: "taller-258ca",
+    storageBucket: "taller-258ca.firebasestorage.app",
+    messagingSenderId: "838461304832",
+    appId: "1:838461304832:web:86f65d24d3ad9c1b0868e5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 👇 Esto hace que puedas usar Firebase en tu script.js
+  window.db = db;
+
+  console.log("Firebase conectado");
+</script>
+    <script type="module" src="script.js"></script>
   </body>
 </html>

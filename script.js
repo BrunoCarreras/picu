@@ -1,10 +1,20 @@
-const STORAGE_KEY = 'picu-payment-tracker-v2';
-const LEGACY_STORAGE_KEY = 'picu-payment-tracker-v1';
-const DEFAULT_BASE = 52000;
+import {
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+  updateDoc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const db = window.db;
+
+const DEFAULT_BASE = 56000;
 const PAGE_SIZE = 15;
 
 const state = {
-  ...loadState(),
+  baseAmount: DEFAULT_BASE,
+  people: [],
   filters: {
     query: '',
     day: '',
@@ -17,6 +27,7 @@ const personForm = document.getElementById('personForm');
 const nameInput = document.getElementById('nameInput');
 const dayInput = document.getElementById('dayInput');
 const scheduleInput = document.getElementById('scheduleInput');
+const personAmountInput = document.getElementById('personAmountInput');
 const peopleTableBody = document.getElementById('peopleTableBody');
 const emptyMessage = document.getElementById('emptyMessage');
 const resetPaymentsButton = document.getElementById('resetPayments');
@@ -29,46 +40,55 @@ const totalPaid = document.getElementById('totalPaid');
 const totalPending = document.getElementById('totalPending');
 
 baseAmountInput.value = state.baseAmount;
+personAmountInput.value = state.baseAmount;
 
-baseAmountInput.addEventListener('input', () => {
-  const parsed = Number(baseAmountInput.value);
-  if (Number.isFinite(parsed) && parsed >= 0) {
-    state.baseAmount = parsed;
-    saveState();
-    render();
-  }
+// 🔥 TIEMPO REAL (CLAVE)
+onSnapshot(collection(db, "alumnos"), (snapshot) => {
+  state.people = [];
+
+  snapshot.forEach((docSnap) => {
+    state.people.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  render();
 });
 
-personForm.addEventListener('submit', (event) => {
+// ➕ AGREGAR
+personForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const name = nameInput.value.trim();
   const day = dayInput.value;
   const schedule = scheduleInput.value.trim();
+  const amount = Number(personAmountInput.value);
 
-  if (!name || !schedule || !day) {
-    return;
-  }
+  if (!name || !schedule || !day || !Number.isFinite(amount) || amount < 0) return;
 
-  state.people.push({
-    id: crypto.randomUUID(),
+  await addDoc(collection(db, "alumnos"), {
     name,
     day,
     schedule,
+    amount,
     paid: false,
   });
 
   personForm.reset();
-  saveState();
-  render();
+  personAmountInput.value = state.baseAmount;
 });
 
-resetPaymentsButton.addEventListener('click', () => {
-  state.people = state.people.map((person) => ({ ...person, paid: false }));
-  saveState();
-  render();
+// 🔄 RESET PAGOS
+resetPaymentsButton.addEventListener('click', async () => {
+  for (const person of state.people) {
+    await updateDoc(doc(db, "alumnos", person.id), {
+      paid: false
+    });
+  }
 });
 
+// 🔍 FILTROS
 searchInput.addEventListener('input', () => {
   state.filters.query = searchInput.value.trim().toLowerCase();
   state.filters.page = 1;
@@ -81,43 +101,6 @@ dayFilter.addEventListener('change', () => {
   render();
 });
 
-function loadState() {
-  const fallback = { baseAmount: DEFAULT_BASE, people: [] };
-  const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
-
-  if (!raw) {
-    return fallback;
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    return {
-      baseAmount:
-        Number.isFinite(parsed.baseAmount) && parsed.baseAmount >= 0
-          ? parsed.baseAmount
-          : DEFAULT_BASE,
-      people: Array.isArray(parsed.people)
-        ? parsed.people.map((p) => ({
-            id: typeof p.id === 'string' ? p.id : crypto.randomUUID(),
-            name: typeof p.name === 'string' ? p.name : '',
-            day: typeof p.day === 'string' ? p.day : 'Lunes',
-            schedule: typeof p.schedule === 'string' ? p.schedule : '',
-            paid: Boolean(p.paid),
-          }))
-        : [],
-    };
-  } catch {
-    return fallback;
-  }
-}
-
-function saveState() {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({ baseAmount: state.baseAmount, people: state.people }),
-  );
-}
-
 function getFilteredPeople() {
   return state.people.filter((person) => {
     const matchesQuery = person.name.toLowerCase().includes(state.filters.query);
@@ -126,6 +109,7 @@ function getFilteredPeople() {
   });
 }
 
+// 🎨 RENDER
 function render() {
   const filtered = getFilteredPeople();
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -141,45 +125,55 @@ function render() {
 
   visiblePeople.forEach((person) => {
     const row = rowTemplate.content.firstElementChild.cloneNode(true);
+
     const paidCheckbox = row.querySelector('.paidCheckbox');
     const nameField = row.querySelector('.nameField');
     const dayField = row.querySelector('.dayField');
     const scheduleField = row.querySelector('.scheduleField');
-    const amount = row.querySelector('.amount');
+    const amountField = row.querySelector('.amountField');
     const deleteBtn = row.querySelector('.deleteBtn');
 
     paidCheckbox.checked = person.paid;
     nameField.value = person.name;
     dayField.value = person.day;
     scheduleField.value = person.schedule;
-    amount.textContent = formatMoney(state.baseAmount);
+    amountField.value = person.amount;
 
-    paidCheckbox.addEventListener('change', () => {
-      person.paid = paidCheckbox.checked;
-      saveState();
-      updateSummary();
+    paidCheckbox.addEventListener('change', async () => {
+      await updateDoc(doc(db, "alumnos", person.id), {
+        paid: paidCheckbox.checked
+      });
     });
 
-    nameField.addEventListener('change', () => {
-      person.name = nameField.value.trim();
-      saveState();
+    nameField.addEventListener('change', async () => {
+      await updateDoc(doc(db, "alumnos", person.id), {
+        name: nameField.value.trim()
+      });
     });
 
-    dayField.addEventListener('change', () => {
-      person.day = dayField.value;
-      saveState();
-      render();
+    dayField.addEventListener('change', async () => {
+      await updateDoc(doc(db, "alumnos", person.id), {
+        day: dayField.value
+      });
     });
 
-    scheduleField.addEventListener('change', () => {
-      person.schedule = scheduleField.value.trim();
-      saveState();
+    scheduleField.addEventListener('change', async () => {
+      await updateDoc(doc(db, "alumnos", person.id), {
+        schedule: scheduleField.value.trim()
+      });
     });
 
-    deleteBtn.addEventListener('click', () => {
-      state.people = state.people.filter((p) => p.id !== person.id);
-      saveState();
-      render();
+    amountField.addEventListener('change', async () => {
+      const nextAmount = Number(amountField.value);
+      if (Number.isFinite(nextAmount) && nextAmount >= 0) {
+        await updateDoc(doc(db, "alumnos", person.id), {
+          amount: nextAmount
+        });
+      }
+    });
+
+    deleteBtn.addEventListener('click', async () => {
+      await deleteDoc(doc(db, "alumnos", person.id));
     });
 
     peopleTableBody.appendChild(row);
@@ -192,16 +186,12 @@ function render() {
 
 function renderPagination(totalPages) {
   pagination.innerHTML = '';
+  if (totalPages <= 1) return;
 
-  if (totalPages <= 1) {
-    return;
-  }
-
-  for (let page = 1; page <= totalPages; page += 1) {
+  for (let page = 1; page <= totalPages; page++) {
     const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = `page-btn ${page === state.filters.page ? 'active' : ''}`;
-    btn.textContent = String(page);
+    btn.textContent = page;
+    btn.className = page === state.filters.page ? 'active' : '';
 
     btn.addEventListener('click', () => {
       state.filters.page = page;
@@ -213,17 +203,11 @@ function renderPagination(totalPages) {
 }
 
 function updateSummary() {
-  const expected = state.people.length * state.baseAmount;
-  const collected = state.people.filter((p) => p.paid).length * state.baseAmount;
+  const expected = state.people.reduce((sum, p) => sum + p.amount, 0);
+  const collected = state.people.filter(p => p.paid).reduce((sum, p) => sum + p.amount, 0);
   const pending = expected - collected;
 
-  totalExpected.textContent = formatMoney(expected);
-  totalPaid.textContent = formatMoney(collected);
-  totalPending.textContent = formatMoney(pending);
+  totalExpected.textContent = `$${expected.toLocaleString('es-AR')}`;
+  totalPaid.textContent = `$${collected.toLocaleString('es-AR')}`;
+  totalPending.textContent = `$${pending.toLocaleString('es-AR')}`;
 }
-
-function formatMoney(value) {
-  return `$${value.toLocaleString('es-AR')}`;
-}
-
-render();
